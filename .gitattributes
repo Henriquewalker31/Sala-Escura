@@ -1,0 +1,14 @@
+* text=auto eol=lf
+
+*.py text diff=python
+*.js text diff=javascript
+*.css text diff=css
+*.html text diff=html
+*.md text diff=markdown
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
