@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sala Escura · catálogo de filmes</title>
+  <meta name="description" content="Catálogo de filmes: busca, em alta e ficha técnica. Backend em FastAPI, frontend em JavaScript puro, dados do TMDB.">
+  <meta name="theme-color" content="#05070c">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Pular para o catálogo</a>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Sala Escura</span>
+      </a>
+
+      <form class="search" id="search-form" role="search">
+        <label class="sr-only" for="q">Buscar um filme</label>
+        <input id="q" name="q" type="search" placeholder="Buscar um filme…" autocomplete="off" spellcheck="false">
+        <button type="submit">Buscar</button>
+      </form>
+
+      <p class="mode" id="mode" hidden>
+        <span class="mode-dot" aria-hidden="true"></span>
+        <span id="mode-label"></span>
+      </p>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="billboard" id="billboard" hidden></section>
+
+    <nav class="chips" id="chips" aria-label="Filtrar por gênero"></nav>
+
+    <section class="shelf" aria-labelledby="shelf-title">
+      <header class="shelf-head">
+        <h2 id="shelf-title">Em alta esta semana</h2>
+        <p class="shelf-meta mono" id="shelf-meta" aria-live="polite"></p>
+      </header>
+
+      <p class="note" id="note" hidden></p>
+
+      <div class="grid" id="grid" aria-busy="true"></div>
+
+      <p class="status" id="status" hidden></p>
+
+      <div class="more-wrap" id="more-wrap" hidden>
+        <button class="more" id="more" type="button">Carregar mais</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p class="mono">FastAPI · JavaScript puro · dados de <a href="https://www.themoviedb.org" target="_blank" rel="noreferrer">TMDB</a></p>
+    <p class="mono dim">Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.</p>
+  </footer>
+
+  <dialog id="ficha" aria-labelledby="ficha-title">
+    <div class="ficha">
+      <button class="ficha-close" id="ficha-close" type="button" aria-label="Fechar ficha">Fechar</button>
+      <div id="ficha-body"></div>
+    </div>
+  </dialog>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
