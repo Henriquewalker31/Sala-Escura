@@ -2,8 +2,10 @@
 
 import os
 
-os.environ.pop("TMDB_API_KEY", None)
-os.environ.pop("TMDB_ACCESS_TOKEN", None)
+# Valores vazios (em vez de remover) impedem que o .env local seja carregado:
+# load_dotenv não sobrescreve variáveis já definidas.
+os.environ["TMDB_API_KEY"] = ""
+os.environ["TMDB_ACCESS_TOKEN"] = ""
 
 import pytest
 from fastapi.testclient import TestClient
