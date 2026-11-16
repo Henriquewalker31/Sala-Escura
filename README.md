@@ -1,6 +1,6 @@
 # Sala Escura
 
-[![CI](https://github.com/Henriquewalker31/sala-escura-tmdb/actions/workflows/ci.yml/badge.svg)](https://github.com/Henriquewalker31/sala-escura-tmdb/actions/workflows/ci.yml)
+[![CI](https://github.com/Henriquewalker31/Sala-Escura/actions/workflows/ci.yml/badge.svg)](https://github.com/Henriquewalker31/Sala-Escura/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Dados](https://img.shields.io/badge/Dados-TMDB-01B4E4?logo=themoviedb&logoColor=white)](https://www.themoviedb.org/)
@@ -47,8 +47,8 @@ Pré-requisitos: **Python 3.10+** e, opcionalmente, uma credencial do TMDB.
 ### Linux / macOS
 
 ```bash
-git clone https://github.com/Henriquewalker31/sala-escura-tmdb.git
-cd sala-escura-tmdb
+git clone https://github.com/Henriquewalker31/Sala-Escura.git
+cd Sala-Escura
 cp .env.example .env      # preencha uma das credenciais
 ./run.sh
 ```
@@ -56,8 +56,8 @@ cp .env.example .env      # preencha uma das credenciais
 ### Windows (PowerShell)
 
 ```powershell
-git clone https://github.com/Henriquewalker31/sala-escura-tmdb.git
-cd sala-escura-tmdb
+git clone https://github.com/Henriquewalker31/Sala-Escura.git
+cd Sala-Escura
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r backend\requirements.txt
@@ -119,7 +119,7 @@ A ficha (`/api/movies/{id}`) acrescenta `tagline`, `runtime`, `genres`, `directo
 ## Estrutura do projeto
 
 ```
-sala-escura-tmdb/
+Sala-Escura/
 ├── run.sh                      # sobe tudo em :8000 (Linux/macOS)
 ├── .env.example
 ├── backend/
