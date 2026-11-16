@@ -1,69 +1,105 @@
 # Sala Escura
 
-Catálogo de filmes full stack: **Python (FastAPI)** no backend, **JavaScript puro** no frontend
-e a **API do TMDB** como fonte de dados.
+[![CI](https://github.com/Henriquewalker31/sala-escura-tmdb/actions/workflows/ci.yml/badge.svg)](https://github.com/Henriquewalker31/sala-escura-tmdb/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Dados](https://img.shields.io/badge/Dados-TMDB-01B4E4?logo=themoviedb&logoColor=white)](https://www.themoviedb.org/)
 
-Busca por título, destaques da semana, filtro por gênero e ficha técnica com sinopse,
-direção, elenco, duração e trailer.
+Catálogo de filmes full stack: **FastAPI** no backend, **JavaScript puro** no frontend e a **API do TMDB** como fonte de dados. Busca por título, destaques da semana, filtro por gênero e ficha técnica com sinopse, direção, elenco, duração e trailer — tudo com um visual inspirado em sala de cinema.
 
+## Visão geral
+
+O navegador nunca fala com o TMDB diretamente. Um pequeno BFF (Backend For Frontend) em FastAPI concentra a credencial, normaliza as respostas, aplica cache e entrega ao frontend apenas o que ele precisa. O resultado é um frontend sem build, sem `npm` e sem chave exposta.
+
+```mermaid
+flowchart LR
+  U[Navegador] -->|HTTP| F[Frontend estático]
+  F -->|/api/*| B[FastAPI BFF]
+  B -->|cache com TTL| C[(Memória)]
+  B -->|HTTPS| T[TMDB API]
 ```
-        navegador                     servidor                        externo
-┌────────────────────┐      ┌──────────────────────────┐      ┌──────────────────┐
-│ index.html         │      │ FastAPI                  │      │ TMDB             │
-│ styles.css         │ ───► │  /api/trending           │ ───► │ api.themoviedb   │
-│ app.js (ES modules)│ ◄─── │  /api/search             │ ◄─── │ (chave só aqui)  │
-│                    │ JSON │  /api/discover           │      └──────────────────┘
-│ sem build, sem npm │      │  /api/movies/{id}        │
-└────────────────────┘      │  cache TTL + normalização│
-                            └──────────────────────────┘
-```
 
-## Por que um backend no meio?
+## Funcionalidades
 
-O navegador **não** fala com o TMDB diretamente. Isso parece um passo extra, mas resolve
-quatro problemas de uma vez:
+- Busca por título com debounce e tolerância a acentos e caixa.
+- Filmes em alta na semana (ou no dia), com paginação.
+- Filtro por gênero nos chips do topo.
+- Ficha técnica em `<dialog>` nativo: sinopse, tagline, direção, elenco, duração, gêneros, nota e trailer.
+- Cache em memória com TTL para reduzir chamadas ao TMDB.
+- Modo demo automático: sem credencial, a aplicação sobe com um catálogo local.
+- Arte tipográfica gerada quando o filme não tem pôster — nunca uma imagem quebrada.
+- Interface acessível: navegação por teclado, `aria-live`, foco visível e `prefers-reduced-motion`.
 
-| Problema | Como o backend resolve |
+## Stack
+
+| Camada | Tecnologia |
 |---|---|
-| Chave da API exposta no JavaScript | Fica só no `.env`, no servidor |
-| Respostas grandes e instáveis do TMDB | Saem normalizadas (`title`, `year`, `poster`, `rating`…) |
-| Limite de requisições | Cache em memória com TTL de 10 min |
-| Trocar de fonte de dados | Só muda `backend/app/tmdb.py` |
+| Backend | Python 3.10+, FastAPI, Uvicorn, HTTPX, python-dotenv |
+| Frontend | HTML, CSS e JavaScript puro (ES Modules) |
+| Dados | TMDB API v3/v4 |
+| Testes | Pytest + FastAPI TestClient |
+| CI | GitHub Actions |
 
-## Rodando
+## Como rodar
 
-Pré-requisitos: Python 3.10+ (nada de Node, npm ou build).
+Pré-requisitos: **Python 3.10+** e, opcionalmente, uma credencial do TMDB.
+
+### Linux / macOS
 
 ```bash
-cp .env.example .env      # cole sua chave do TMDB (opcional: sem ela roda em modo demo)
-./run.sh                  # cria a venv, instala as dependências e sobe em :8000
+git clone https://github.com/Henriquewalker31/sala-escura-tmdb.git
+cd sala-escura-tmdb
+cp .env.example .env      # preencha uma das credenciais
+./run.sh
 ```
 
-Abra <http://localhost:8000>. A interface e a API vêm do mesmo servidor.
+### Windows (PowerShell)
 
-### Como pegar a chave do TMDB
+```powershell
+git clone https://github.com/Henriquewalker31/sala-escura-tmdb.git
+cd sala-escura-tmdb
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r backend\requirements.txt
+uvicorn app.main:app --app-dir backend --reload --port 8000
+```
+
+Abra <http://localhost:8000>. A interface e a API são servidas pelo mesmo processo.
+
+Sem credencial, a aplicação inicia em **modo demo** com o catálogo de `frontend/demo-data.json` — o selo no topo indica o modo ativo.
+
+## Configuração
+
+Copie `.env.example` para `.env` na raiz do projeto (um `.env` em `backend/` também é aceito e tem precedência).
+
+| Variável | Obrigatória | Padrão | Descrição |
+|---|---|---|---|
+| `TMDB_API_KEY` | uma das duas | — | Chave da API v3 |
+| `TMDB_ACCESS_TOKEN` | uma das duas | — | Token de leitura v4 (Bearer) |
+| `TMDB_LANGUAGE` | não | `pt-BR` | Idioma das respostas |
+| `CACHE_TTL` | não | `600` | Tempo de vida do cache, em segundos |
+
+> A chave v3 vai em `TMDB_API_KEY`; o token v4 vai em `TMDB_ACCESS_TOKEN`. Não inverta os campos.
+
+### Obtendo a credencial
 
 1. Crie uma conta em <https://www.themoviedb.org/signup>.
-2. Vá em **Configurações → API** e solicite uma chave (uso pessoal sai na hora).
-3. Copie a **Chave da API (v3)** para `TMDB_API_KEY` no `.env` — ou, se preferir a
-   v4, cole o **token de leitura** em `TMDB_ACCESS_TOKEN`.
+2. Acesse **Configurações → API** e solicite uma chave de uso pessoal.
+3. Copie a **Chave da API (v3)** para `TMDB_API_KEY` ou o **Token de Leitura (v4)** para `TMDB_ACCESS_TOKEN`.
 
-Enquanto não houver chave, a aplicação sobe em **modo demo**: responde com o
-catálogo de exemplo em `frontend/demo-data.json` (14 filmes). O selo "modo demo"
-no topo indica isso.
+## API
 
-## Endpoints
-
-| Método | Rota | O que faz |
+| Método | Rota | Descrição |
 |---|---|---|
-| GET | `/api/health` | Modo atual (`tmdb` / `demo`), idioma e itens em cache |
-| GET | `/api/trending?window=week&page=1` | Filmes em alta (dia ou semana) |
-| GET | `/api/search?q=bacurau&page=1` | Busca por título |
-| GET | `/api/discover?genre_id=18&page=1` | Populares de um gênero |
-| GET | `/api/movies/{id}` | Ficha completa + elenco + trailer |
-| GET | `/docs` | Documentação interativa gerada pelo FastAPI |
+| `GET` | `/api/health` | Modo atual (`tmdb`/`demo`), idioma e itens em cache |
+| `GET` | `/api/trending?window=week&page=1` | Filmes em alta (dia ou semana) |
+| `GET` | `/api/search?q=bacurau&page=1` | Busca por título |
+| `GET` | `/api/discover?genre_id=18&page=1` | Populares de um gênero |
+| `GET` | `/api/movies/{id}` | Ficha completa com elenco e trailer |
+| `GET` | `/api/genres` | Gêneros disponíveis |
+| `GET` | `/docs` | Documentação interativa (Swagger UI) |
 
-Todos devolvem o mesmo formato de cartão:
+Exemplo de cartão retornado pelas listas:
 
 ```json
 {
@@ -78,64 +114,64 @@ Todos devolvem o mesmo formato de cartão:
 }
 ```
 
-A ficha (`/api/movies/{id}`) acrescenta `tagline`, `runtime`, `genres`, `director`,
-`cast` e `trailer`.
+A ficha (`/api/movies/{id}`) acrescenta `tagline`, `runtime`, `genres`, `director`, `cast`, `trailer` e `homepage`.
 
-## Estrutura
+## Estrutura do projeto
 
 ```
-tmdb-cine/
-├── run.sh                  # um comando para subir tudo
+sala-escura-tmdb/
+├── run.sh                      # sobe tudo em :8000 (Linux/macOS)
 ├── .env.example
 ├── backend/
 │   ├── app/
-│   │   ├── main.py         # rotas FastAPI, CORS, montagem do frontend
-│   │   ├── tmdb.py         # cliente HTTP + normalização das respostas
-│   │   ├── cache.py        # cache em memória com TTL
-│   │   └── demo.py         # catálogo local para rodar sem chave
-│   ├── tests/test_api.py   # 7 testes de contrato (sem rede)
+│   │   ├── main.py             # rotas FastAPI, CORS e arquivos estáticos
+│   │   ├── tmdb.py             # cliente HTTP + normalização
+│   │   ├── cache.py            # cache em memória com TTL
+│   │   └── demo.py             # catálogo local para rodar sem chave
+│   ├── tests/test_api.py       # testes de contrato (sem rede)
 │   ├── pytest.ini
-│   └── requirements.txt
-└── frontend/
-    ├── index.html
-    ├── styles.css
-    ├── app.js              # busca com debounce, filtros, ficha em <dialog>
-    └── demo-data.json      # mesma amostra usada pelo backend e pelo fallback
+│   ├── requirements.txt
+│   └── requirements-dev.txt
+├── frontend/
+│   ├── index.html
+│   ├── styles.css
+│   ├── app.js                  # busca, filtros e ficha em <dialog>
+│   └── demo-data.json
+└── .github/workflows/ci.yml    # testes a cada push/PR
 ```
 
 ## Testes
 
 ```bash
-cd backend && python -m pytest -q
+pip install -r backend/requirements.txt -r backend/requirements-dev.txt
+cd backend
+python -m pytest -q
 ```
 
-Os testes forçam o modo demo (limpam as variáveis de ambiente), então rodam offline
-e sem gastar requisições: formato dos cartões, busca sem acento, ficha com direção e
-gêneros, 404 e 422.
+Os testes limpam as variáveis de ambiente e forçam o modo demo, então rodam offline e sem gastar requisições: contrato dos cartões, busca sem acento, ficha com direção e gêneros, 404 e 422.
 
-## Decisões que valem explicar
+## Decisões de projeto
 
-- **`<dialog>` nativo** para a ficha: foco preso, `Esc` para fechar e backdrop de graça.
-- **JavaScript puro com módulos ES**: zero instalação. Quando o projeto crescer,
-  o `app.js` migra para React/Vite sem tocar no backend.
-- **Sem pôster = arte própria**: quando o filme não tem imagem, o cartão gera uma
-  arte tipográfica com cor derivada do `id`. Nada de imagem quebrada.
-- **Busca com debounce de 350 ms** e mínimo de 2 caracteres.
-- **Acessibilidade**: navegação por teclado na grade (`Enter`/`Espaço`), `aria-live`
-  na contagem de resultados, foco visível e `prefers-reduced-motion` respeitado.
-- **Cache sem lock**: entre a leitura e a escrita do dicionário não existe `await`,
-  então não há corrida dentro de um único event loop.
+- **BFF em vez de chamada direta**: a credencial fica no servidor e o frontend consome um formato estável.
+- **Normalização na borda**: `poster_path`, `vote_average` e `first_air_date` viram `poster`, `rating` e `year` — trocar a fonte de dados fica barato.
+- **Cache sem lock**: entre a leitura e a escrita do dicionário não existe `await`, então não há corrida dentro de um único event loop.
+- **`<dialog>` nativo**: foco preso, `Esc` para fechar e backdrop sem biblioteca.
+- **Paleta de sala escura**: preto quase puro, azul de projeção e vermelho de cortina, com grão de filme sutil.
+- **Zero build no frontend**: módulos ES direto no navegador; quando o projeto crescer, migrar para React/Vite não exige mudar a API.
 
-## Próximos passos (se quiser evoluir)
+## Roadmap
 
-1. **Favoritos com login** — SQLite + `passlib` + JWT, uma tabela `favorites(user_id, movie_id)`.
-2. **Postgres + SQLAlchemy** no lugar do cache em memória, guardando fichas visitadas.
-3. **React/Vite** consumindo os mesmos endpoints (a API não muda).
-4. **Deploy** — `Dockerfile` com `uvicorn --host 0.0.0.0` e a chave como secret do ambiente.
-5. **Séries e pessoas** — a API do TMDB cobre `/tv` e `/person`; basta repetir o padrão.
+- [ ] Favoritos com login (SQLite + JWT).
+- [ ] Persistência de fichas visitadas em Postgres.
+- [ ] Deploy com Docker e segredo de ambiente.
+- [ ] Suporte a séries e pessoas.
 
 ## Créditos
 
 Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.
-Os dados de `frontend/demo-data.json` são uma amostra aproximada, escrita para o
-projeto funcionar offline.
+
+Dados de `frontend/demo-data.json` são uma amostra aproximada, escrita para o projeto funcionar offline.
+
+## Autor
+
+Feito por [Henrique Walker](https://github.com/Henriquewalker31).
